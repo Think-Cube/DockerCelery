@@ -1,17 +1,44 @@
-# Docker Celery container
-[![docker-celery](https://img.shields.io/badge/spy86-celery-blue.svg)](https://cloud.docker.com/repository/docker/spy86/celery) [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+# DockerCelery
 
-## What is Celery
-Celery is an open source asynchronous job queue / job queue based on the forwarding of distributed messages. It focuses on real-time operation, but also supports scheduling.
+This is a simple Docker setup for running Celery workers with Python 3.12.
 
-## How to use
+## Files
 
-### Celery worker (RabbitMQ Broker)
-```
-docker run --link rabbit:rabbit --name celery -d spy86/celery:latest
+* `Dockerfile` – defines a Python 3.12 image with Celery installed.
+* `requirements.txt` – Python dependencies.
+* `WORKDIR /app` – working directory in the container.
+
+## Build the Docker image
+
+```bash
+docker build -t docker-celery .
 ```
 
-### Celery worker (Redis Broker)
+## Run the Celery worker
+
+```bash
+docker run -it -v $(pwd):/app docker-celery
 ```
-docker run --link redis:redis -e CELERY_BROKER_URL=redis://redis --name celery -d spy86/celery:latest
+
+The container will start a Celery worker using the `tasks.py` file in `/app`.
+
+## Adding your tasks
+
+Create a `tasks.py` file in the project directory:
+
+```python
+from celery import Celery
+
+app = Celery('tasks', broker='redis://redis:6379/0')
+
+@app.task
+def add(x, y):
+    return x + y
 ```
+
+> Make sure to have a running broker (like Redis) to connect Celery to.
+
+## Notes
+
+* You can override the default CMD to run different commands in the container.
+* Non-root user `celeryuser` is used for security.
