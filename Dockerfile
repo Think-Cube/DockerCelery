@@ -1,16 +1,15 @@
 FROM python:3.15-rc-alpine3.22
 
-RUN apt-get update && apt-get install -y \
-    build-essential \
-    libffi-dev \
-    && rm -rf /var/lib/apt/lists/*
+RUN apk add --no-cache \
+    build-base \
+    libffi-dev
 
 WORKDIR /app
 
 COPY requirements.txt .
 RUN pip install --no-cache-dir -r requirements.txt
 
-RUN useradd -ms /bin/bash celeryuser
+RUN adduser -D celeryuser
 USER celeryuser
 
 CMD ["celery", "-A", "tasks", "worker", "--loglevel=info"]
